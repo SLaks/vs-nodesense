@@ -51,6 +51,7 @@ function require(id) {
 	Module._resolveFilename = function (id, parent) {
 		/// <summary>Resolves a relative path or module name to a full module filename, as used by require().</summary>
 
+		id = id.replace(/\\/g, '/');
 		// If it's a relative path, resolve it.
 		if (/^\.{0,2}\//.test(id)) {
 			if (parent && parent.filename)
@@ -117,9 +118,16 @@ function require(id) {
 	};
 
 
+	intellisense.declareModule = function (path) {
+		/// <summary>Creates an empty module object.  Call this function before running any actual modules so that require() can see future modules.  This should only be used in generated code.</summary>
+		if (require.cache.hasOwnProperty(path))
+			return require.cache[path];
+		var newModule = require.cache[path] = new Module(path);
+		return newModule;
+	};
 	intellisense.enterModuleDefinition = function (path) {
 		/// <summary>Creates globals for the definition of a new module.  Call this function before running the normal Node.js module source code.  This should only be used in generated code.</summary>
-		var newModule = global.module = new Module(path);
+		var newModule = global.module = require.cache[path] || intellisense.declareModule(path);
 
 		// Shorthand for module.exports
 		global.exports = newModule.exports;
