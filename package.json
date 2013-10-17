@@ -1,0 +1,21 @@
+{
+  "name": "vs-nodesense",
+  "version": "0.0.0",
+  "description": "Node.js IntelliSense for Visual Studio 2012+",
+  "author": "Schabse Laks <Dev@SLaks.net> (http://slaks.net)",
+  "bin": {
+    "vs-nodesense": "generate.js"
+  },
+  "scripts": {
+	"post-install": "vs-nodesense"
+  }
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/SLaks/vs-nodesense.git"
+  },
+  "keywords": [
+    "visual-studio",
+    "intellisense"
+  ],
+  "license": "MIT"
+}
