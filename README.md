@@ -39,6 +39,7 @@ Files in the `templates/` directory will be copied directly to `node_modules/.vs
 The generator will create a reference file for every `require()`d file in the target project. 
 
 For `.js` (including Node.js built-in modules) files, this file will have a reference tag to the actual JS file, and a call to `intellisense.enterModuleDefinition()` for the _next_ file.  This is the only way to run my code before running the actual user file; referenced files are always run before any code in the referencing file.  Using a reference to the actual JS file allows Go-to-definition to work as expected.
+It will also emit any aliases (directory or package names) for the next file.
 
 For `.json` files, it will paste the JSON content directly into the generated file and assign it to `module.exports`.
 
