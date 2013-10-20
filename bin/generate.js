@@ -5,7 +5,7 @@ var _ = require('lodash');
 var mkdirp = require('mkdirp');
 var rimraf = require('rimraf');
 
-var ReferenceEmitter = require('./ReferenceEmitter');
+var ModuleEmitter = require('./ModuleEmitter');
 
 var projectDir = './';
 var outputDir = projectDir + 'node_modules/.vs-nodesense/';
@@ -23,7 +23,7 @@ environmentFile.write('process.config = ' + JSON.stringify(process.config) + ';'
 environmentFile.write('intellisense.deleteExtraGlobals(' + JSON.stringify(Object.getOwnPropertyNames(global)) + ');');
 environmentFile.end();
 
-var refGen = new ReferenceEmitter(projectDir, outputDir);
+var refGen = new ModuleEmitter(projectDir, outputDir);
 
 fs.writeFile(builtinsDir + '.jshintignore', '**');
 fs.writeFile(refGen.referencesDir + '.jshintignore', '**');

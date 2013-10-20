@@ -13,7 +13,7 @@ var mkdirp = require('mkdirp');
  * is then referenced in the next JS file, so it executes
  * with the correct module object.
  */
-function ReferenceEmitter(projectDir, outputDir) {
+function ModuleEmitter(projectDir, outputDir) {
 	this.referencesDir = outputDir + 'references/';
 	this.projectDir = projectDir;
 	this.outputDir = outputDir;
@@ -35,13 +35,13 @@ function ReferenceEmitter(projectDir, outputDir) {
 	// Holds IDs of all modules that have already been defined.
 	this.emittedModules = Object.create(null);
 }
-module.exports = ReferenceEmitter;
+module.exports = ModuleEmitter;
 
 /**
  * Sets this instance to write to a file with the given name.
  * This creates the file, and adds it to the references list.
  */
-ReferenceEmitter.prototype.createReferenceFile = function (filePath) {
+ModuleEmitter.prototype.createReferenceFile = function (filePath) {
 	if (this.currentOutFile)
 		this.currentOutFile.end();
 	mkdirp.sync(path.dirname(filePath));
@@ -58,7 +58,7 @@ ReferenceEmitter.prototype.createReferenceFile = function (filePath) {
  * After calling this, write the module definition in a
  * new output file.
  */
-ReferenceEmitter.prototype.writePrelude = function (modulePath) {
+ModuleEmitter.prototype.writePrelude = function (modulePath) {
 	// If this is an index file, add an alias for its directory.
 	if (/\/index\.[a-z]+$/.test(modulePath)) {
 		var dir = path.dirname(modulePath) + '/';
@@ -77,7 +77,7 @@ ReferenceEmitter.prototype.writePrelude = function (modulePath) {
  * Writes a reference to a module script file to 
  * the current output file
  */
-ReferenceEmitter.prototype.writeModuleReference = function (modulePath) {
+ModuleEmitter.prototype.writeModuleReference = function (modulePath) {
 	this.currentOutFile.write('/// <reference path="' + path.relative(this.referencesDir, modulePath) + '" />\r\n');
 	this.currentOutFile.write('intellisense.closeModule();\r\n');
 };
@@ -85,7 +85,7 @@ ReferenceEmitter.prototype.writeModuleReference = function (modulePath) {
  * Starts a new output file.
  * @param {String} modulePath	The path to the module defined in the file.  This is used to pick a relevant filename.
  */
-ReferenceEmitter.prototype.startFile = function (modulePath) {
+ModuleEmitter.prototype.startFile = function (modulePath) {
 	var relativePath = path.relative(this.projectDir, modulePath).replace(/\.\./g, '--').replace(/^\//, '');
 	var referenceFile = path.resolve(this.referencesDir, relativePath);
 
@@ -104,7 +104,7 @@ ReferenceEmitter.prototype.startFile = function (modulePath) {
  * @param {String} modulePath	The full module ID, as passed to require().
  * @param {String} [filePath]	The path to the module source code.  If omitted, the module ID is assumed to be a filepath.  This parameter is intended for built-in modules.
  */
-ReferenceEmitter.prototype.emitFile = function (modulePath, filePath) {
+ModuleEmitter.prototype.emitFile = function (modulePath, filePath) {
 	modulePath = require.resolve(modulePath).replace(/\\/g, '/');
 
 	if (this.emittedModules[modulePath])
@@ -121,7 +121,7 @@ ReferenceEmitter.prototype.emitFile = function (modulePath, filePath) {
 /**
  * Closes all files created by the emitter 
  */
-ReferenceEmitter.prototype.end = function () {
+ModuleEmitter.prototype.end = function () {
 	this.currentOutFile.end();
 	this.referenceListFile.end();
 	this.declarationsFile.end();
