@@ -138,8 +138,6 @@ function require(id) {
 	intellisense.closeModule = function () {
 		/// <summary>Closes the definition of a module.  Call this function after running the normal Node.js module source code.  This should only be used in generated code.</summary>
 		global.module = new Module("<unknown user code>");
-		// Remove the local variables declared in the module (unlike Node.js, VS always runs in the global scope)
-		intellisense.deleteExtraGlobals();
 	};
 
 	var moduleModule = new Module('module');

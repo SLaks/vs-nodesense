@@ -69,6 +69,3 @@
 	});
 
 })(window);
-
-// Call this function immediately, before other referenced files create desired globals
-intellisense.deleteExtraGlobals();

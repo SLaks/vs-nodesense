@@ -17,9 +17,10 @@ var builtinsDir = outputDir + 'builtin-source/';
 mkdirp.sync(builtinsDir);
 
 var environmentFile = fs.createWriteStream(outputDir + 'environment-data.js');
-environmentFile.write('process.env = ' + JSON.stringify(process.env));
-environmentFile.write('process.versions = ' + JSON.stringify(process.versions));
-environmentFile.write('process.config = ' + JSON.stringify(process.config));
+environmentFile.write('process.env = ' + JSON.stringify(process.env) + ';');
+environmentFile.write('process.versions = ' + JSON.stringify(process.versions) + ';');
+environmentFile.write('process.config = ' + JSON.stringify(process.config) + ';');
+environmentFile.write('intellisense.deleteExtraGlobals(' + JSON.stringify(Object.getOwnPropertyNames(global)) + ');');
 environmentFile.end();
 
 var refGen = new ReferenceEmitter(projectDir, outputDir);
@@ -34,7 +35,7 @@ fs.writeFile(refGen.referencesDir + '.jshintignore', '**');
 // to see which modules were loaded before being defined.
 var knownModuleOrder = [
 	'util', 'events', 'assert', '_stream_readable', '_stream_writable', '_stream_duplex', '_stream_transform',
-	'_stream_passthrough', 'stream', '_linklist', 'timers', 'net', 'path',	'querystring', 'punycode', 'url',
+	'_stream_passthrough', 'stream', '_linklist', 'timers', 'net', 'path', 'querystring', 'punycode', 'url',
 	'string_decoder', 'crypto', 'tls', 'dgram', 'vm', 'child_process'
 ];
 
