@@ -1,5 +1,9 @@
 ﻿/*jshint unused: false */
+/*global intellisense*/
 "use strict";
+
+intellisense.browserConsole = console;
+global.console = require('console');
 
 // Node.js' process object is defined by a mix of special JS and C code; I can't automatically steal its source.
 // This source is based on the documentation for v0.10.21 on Windows.
