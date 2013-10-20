@@ -15,6 +15,11 @@ util.inherits(JSWriter, fs.WriteStream);
 
 module.exports = JSWriter;
 
+JSWriter.prototype.writeline = function (str) {
+	this.write(str);
+	this.write('\r\n');
+};
+
 /**
  * Writes a reference to the specified Javascript file.
  */

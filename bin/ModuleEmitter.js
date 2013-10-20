@@ -42,6 +42,7 @@ ModuleEmitter.prototype.createReferenceFile = function (filePath) {
 	if (this.currentOutFile)
 		this.currentOutFile.end();
 	this.currentOutFile = this.referenceListFile.createReferencedFile(filePath);
+	this.currentOutFile.writeline('/* global intellisense */');
 };
 
 /**
@@ -72,7 +73,7 @@ ModuleEmitter.prototype.writePrelude = function (modulePath) {
  */
 ModuleEmitter.prototype.writeModuleReference = function (modulePath) {
 	this.currentOutFile.writeReference(modulePath);
-	this.currentOutFile.write('intellisense.closeModule();\r\n');
+	this.currentOutFile.writeline('intellisense.closeModule();');
 };
 /**
  * Starts a new output file.
