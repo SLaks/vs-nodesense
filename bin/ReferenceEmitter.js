@@ -79,6 +79,7 @@ ReferenceEmitter.prototype.writePrelude = function (modulePath) {
  */
 ReferenceEmitter.prototype.writeModuleReference = function (modulePath) {
 	this.currentOutFile.write('/// <reference path="' + path.relative(this.referencesDir, modulePath) + '" />\r\n');
+	this.currentOutFile.write('intellisense.closeModule();\r\n');
 };
 /**
  * Starts a new output file.
