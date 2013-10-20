@@ -16,6 +16,12 @@ var builtinsDir = outputDir + 'builtin-source/';
 
 mkdirp.sync(builtinsDir);
 
+var environmentFile = fs.createWriteStream(outputDir + 'environment-data.js');
+environmentFile.write('process.env = ' + JSON.stringify(process.env));
+environmentFile.write('process.versions = ' + JSON.stringify(process.versions));
+environmentFile.write('process.config = ' + JSON.stringify(process.config));
+environmentFile.end();
+
 var refGen = new ReferenceEmitter(projectDir, outputDir);
 
 fs.writeFile(builtinsDir + '.jshintignore', '**');
