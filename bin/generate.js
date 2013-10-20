@@ -68,6 +68,7 @@ var knownModuleOrder = [
 // TODO: Add node_modules aliases
 _(process.binding('natives'))
 	.pairs()
+	.reject({ 0: 'module' })
 	.sortBy(function (pair) {
 		var index = knownModuleOrder.indexOf(pair[0]);
 		return index < 0 ? 9999 : index;
