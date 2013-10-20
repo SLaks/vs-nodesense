@@ -2,8 +2,7 @@
 
 var path = require('path');
 var fs = require('fs');
-var mkdirp = require('mkdirp');
-
+var JSWriter = require('./JSWriter');
 
 /**
  * This class emits references to all module definitions.
@@ -20,13 +19,11 @@ function ModuleEmitter(projectDir, outputDir) {
 
 	// This file holds an ordered list of <reference> tags
 	// to the individual files created.
-	this.referenceListFile = fs.createWriteStream(outputDir + 'module-references.js');
+	this.referenceListFile = new JSWriter(outputDir + 'module-references.js');
 
 	// This file declares all of the modules referenced by
 	// this instance, and is referenced before all modules
-	this.declarationsFile = this.createReferenceFile(outputDir + '$module-declarations.js');
-
-	this.currentOutFile = null;
+	this.declarationsFile = this.referenceListFile.createReferencedFile(outputDir + '$module-declarations.js');
 
 	// This file calls enterModuleDefinition for the first
 	// module, before it is referenced by the second file.
@@ -44,11 +41,7 @@ module.exports = ModuleEmitter;
 ModuleEmitter.prototype.createReferenceFile = function (filePath) {
 	if (this.currentOutFile)
 		this.currentOutFile.end();
-	mkdirp.sync(path.dirname(filePath));
-
-	this.currentOutFile = fs.createWriteStream(filePath);
-	this.referenceListFile.write('/// <reference path="' + path.relative(this.outputDir, filePath) + '" />\r\n');
-	return this.currentOutFile;
+	this.currentOutFile = this.referenceListFile.createReferencedFile(filePath);
 };
 
 /**
@@ -78,7 +71,7 @@ ModuleEmitter.prototype.writePrelude = function (modulePath) {
  * the current output file
  */
 ModuleEmitter.prototype.writeModuleReference = function (modulePath) {
-	this.currentOutFile.write('/// <reference path="' + path.relative(this.referencesDir, modulePath) + '" />\r\n');
+	this.currentOutFile.writeReference(modulePath);
 	this.currentOutFile.write('intellisense.closeModule();\r\n');
 };
 /**
