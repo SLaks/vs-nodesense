@@ -19,6 +19,8 @@ module.exports = JSWriter;
  * Writes a reference to the specified Javascript file.
  */
 JSWriter.prototype.writeReference = function (referencedFile) {
+	if (referencedFile instanceof fs.WriteStream)
+		referencedFile = referencedFile.path;
 	this.write('/// <reference path="');
 	this.write(path.relative(this.dirname, referencedFile));
 	this.write('" />\r\n');
