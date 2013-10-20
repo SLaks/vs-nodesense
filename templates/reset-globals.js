@@ -3,7 +3,7 @@
 
 (function (global) {
 	// The global object
-	global.global =intellisense.global = global.global = global;
+	global.global = intellisense.global = global.global = global;
 
 	var defaultGlobals = [
 		'decodeURIComponent', 'DTRACE_NET_SERVER_CONNECTION', 'SyntaxError', 'ReferenceError', 'Uint8ClampedArray',
@@ -17,6 +17,8 @@
 		'String', 'module', 'Int32Array', 'COUNTER_HTTP_CLIENT_RESPONSE', 'global', 'DTRACE_NET_SOCKET_READ', 'Uint8Array', 'DTRACE_HTTP_SERVER_RESPONSE', 'escape', 'Array'
 	];
 
+	// If we can't delete a global, we set it to this object to hide it in the filter.
+	var deletedMarkerObject = {};
 	var deletedGlobals = Object.create(null);
 
 	intellisense.deleteExtraGlobals = function (desiredGlobals) {
@@ -33,8 +35,10 @@
 				continue;
 
 			deletedGlobals[key] = Object.getOwnPropertyDescriptor(global, key);
-
 			delete global[key];
+			// If it couldn't be deleted, set it to our marker so we can hide it from IntelliSense.
+			if (Object.hasOwnProperty.call(global, key))
+				global[key] = deletedMarkerObject;
 			count++;
 		}
 
@@ -46,7 +50,7 @@
 		var count = 0;
 
 		for (var key in deletedGlobals) {
-			if (global[key] !== Object.getOwnPropertyDescriptor(global, key)) {
+			if (Object.hasOwnProperty.call(global, key) && global[key] !== deletedMarkerObject) {
 				intellisense.logMessage('Global ' + key + " was recreated after being deleted for Node.js mode and will not be restored.  Original type: " + typeof deletedGlobals[key] + "; new type: " + typeof global[key]);
 				continue;
 			}
@@ -62,9 +66,19 @@
 		if (typeof event.targetName !== "undefined") return;
 
 		event.items = event.items.filter(function (item) {
+			// If it's a function parameter, a keyword, or a local variable, show it
 			if (item.kind === 'reserved' || item.kind === 'parameter' || item.scope !== 'global')
 				return true;
-			return !Object.prototype.hasOwnProperty.call(deletedGlobals, item.name);
+			// If it wasn't deleted, show it
+			if (!(item.name in deletedGlobals))
+				return true;
+			// If it was deleted, but has a phantom entry from IntelliSense.annotate, hide it.  (the value will be undefined)
+			if (!(item.name in global))
+				return false;
+			// If it was deleted, but was then re-created locally, show it.
+			if (item.value !== deletedMarkerObject)
+				return true;
+			return false;
 		});
 	});
 
