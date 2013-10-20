@@ -8,7 +8,7 @@ function require(id) {
 
 	var fullId = require.resolve(id);
 	if (!require.cache.hasOwnProperty(fullId)) {
-		intellisense.logMessage("Node.js modules: require() called with unknown id " + id);
+		intellisense.logMessage("Node.js modules: require() called with unknown id " + id + " from " + module.id);
 		return null;
 	}
 	return require.cache[fullId].exports;
