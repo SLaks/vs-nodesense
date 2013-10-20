@@ -42,6 +42,6 @@ JSWriter.prototype.createReferencedFile = function (newFile) {
 JSWriter.prototype.writeAssignment = function (name, value) {
 	this.write(name);
 	this.write(' = ');
-	this.write(JSON.stringify(value));
+	this.write(JSON.stringify(value, null, '\t'));
 	this.write(';\r\n');
 };

@@ -5,9 +5,12 @@
 intellisense.browserConsole = console;
 global.console = require('console');
 
-// Node.js' process object is defined by a mix of special JS and C code; I can't automatically steal its source.
-// This source is based on the documentation for v0.10.21 on Windows.
-global.process = require('events').EventEmitter();
+// Node.js' process object is defined by a mix of special Javascript
+// and C code; I can't automatically steal its source.
+// This source is based on the documentation for v0.10.21 on Windows
+// Installation-dependent properties like versions & environment are
+// set in environment-data.js from the actual data in the generator.
+global.process = new (require('events').EventEmitter)();
 
 process.stdin = require('stream').Readable();
 process.stdout = require('stream').Writable();
@@ -39,7 +42,6 @@ process.exit = function (code) {
 
 // Skipped gid, uid, and groups functions as they don't exist on Windows.
 
-process.version = "v0.10.21";
 
 process.kill = function (pid, signal) {
 	/// <summary>Send a signal to a process. pid is the process id and signal is the string describing the signal to send. Signal names are strings like 'SIGINT' or 'SIGHUP'. If omitted, the signal will be 'SIGTERM'. See kill(2) for more information.</summary>
@@ -50,8 +52,6 @@ process.kill = function (pid, signal) {
 process.pid = 0;
 
 process.title = 'Node.js';
-process.arch = 'x64';
-process.platform = 'win32';
 
 process.memoryUsage = function () {
 	/// <summary>Returns an object describing the memory usage of the Node process measured in bytes.</summary>
