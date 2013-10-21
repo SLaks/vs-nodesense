@@ -9,6 +9,8 @@ This project extends Visual Studio's Javascript engine to provide full IntelliSe
 ##Usage
 NodeSense requires Visual Studio 2012 or later; the Javascript engine in earlier versions does not execute user code and cannot support this.
 
+The lazy script loader requires you to increase VS' limit on async loaded script files; create a DWORD value in `HKEY_CURRENT_USER\Software\Microsoft\VisualStudio\12.0\JavaScriptLanguageService` (or `11.0` for 2012) named `MaximumScriptLoaderReferencesToLoad` and it to at least 50.
+
 First, [install Node.js and npm](http://nodejs.org).  NodeSense will generate IntelliSense for the built-in modules from the version of Node.js used to run it.
 
 Next, install NodeSense system-wide from an administrative command prompt:

@@ -1,43 +1,53 @@
-﻿/* global intellisense */
+﻿/* global intellisense, _$asyncRequests */
 "use strict";
+
+intellisense.logMessage("In module.js!");
 
 function require(id) {
 	/// <summary>Loads a Javascript or JSON file, or a Node.js module, returning the module's exports object.</summary>
 	/// <param name="id" type="String">The name of an built-in or installed module (in a node_modules folder), or a relative path to a .js file.</param>
 	/// <field name='cache' type='Object' static='true'>Stores every module that has already been loaded.  For internal use.</field>
 
-	var fullId = require.resolve(id);
-	if (!require.cache.hasOwnProperty(fullId)) {
-		intellisense.logMessage("Node.js modules: require() called with unknown id " + id + " from " + module.id);
-		return null;
-	}
-	return require.cache[fullId].exports;
+	return module.require(id);
 }
 
 (function () {
-	// require.cache must contain:
-	// - Every built-in module.
-	// - The full path to every .js file.
-	// - The full path (including trailing slash) to every folder with an index.* or package.json, aliased to the resolved file.
-	// This is done by the Node-side generator.
+	// require._definitions maps primary module IDs (built-in modules and full paths to source files) to arrays of source paths to load them from.
+
+	// require._aliases maps other require()able paths to their primary IDs.
+	// It must contain full paths (including trailing slash) to every folder
+	// that contains an index.* file, or a package.json with a "main" entry.
+	// To make this code simpler, it must also contain primary module paths,
+	// mapped to themselves.
+	// These are populated by the Node-side generator.
+
+	// require.cache contains all module objects that were already loaded.
+	// This is populated as modules are loaded asynchronously.
+
+	require._definitions = {};
+	require._aliases = {};
 	require.cache = {};
 
 	var implicitSuffixes = ['/', '.js', '.json'];
 	function getFile(path) {
-		// Unless this is already a path to a directory, check for directory or extension
-		if (/\/$/.test(path) && !require.cache.hasOwnProperty(path)) {
-			for (var i = 0; i < implicitSuffixes.length; i++) {
-				if (!require.cache.hasOwnProperty(path + implicitSuffixes[i]))
-					continue;
-				path += implicitSuffixes[i];
-			}
-		}
+		/// <summary>Finds the primary ID of a require()able path, or null if the path is not a known module.</summary>
+		if (require._aliases.hasOwnProperty(path))
+			return require._aliases[path];
 
-		// In case this was a path to a directory (whether or not we added a slash), get the actual file path.
-		if (require.cache.hasOwnProperty(path))
-			return require.cache[path].id;
-		else
+		// If the path already refers to a directory, and we
+		// don't have an alias for it, there is nowhere else
+		// to look for a definition.
+		if (/\/$/.test(path))
 			return null;
+
+		// Check whether this is a path to a directory or to
+		// a file without an extension
+		for (var i = 0; i < implicitSuffixes.length; i++) {
+			var newPath = path + implicitSuffixes[i];
+			if (require._aliases.hasOwnProperty(newPath))
+				return require._aliases[newPath];
+		}
+		return null;
 	}
 	function regExpEscape(s) {
 		return s.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
@@ -62,21 +72,22 @@ function require(id) {
 		}
 
 		// If it's already a full path (especially a built-in), return it.
-		if (require.cache.hasOwnProperty(id))
-			return require.cache[id].id;
+		var knownFile = getFile(id);
+		if (knownFile)
+			return knownFile;
 
 		// Otherwise, search for it as a module
-
 		if (!parent || !parent.filename) {
 			// If we don't know where we're coming from, find the first matching module, whether it's a directory 
 			var regex = new RegExp('/node_modules/' + regExpEscape(id) + '/?$');
-			for (var key in require.cache) {
+			for (var key in require._aliases) {
 				if (regex.test(key))
-					return require.cache[key].id;
+					return require._aliases[key];
 			}
 			return null;
 		}
 
+		// This part is stolen from Node.js module resolution source
 		var parts = parent.filename.split(/[\/\\]/);
 
 		for (var tip = parts.length - 1; tip >= 0; tip--) {
@@ -110,29 +121,38 @@ function require(id) {
 		/// <param name="id" type="String">The name of an built-in or installed module (in a node_modules folder), or a relative path to a .js file.</param>
 
 		var fullId = Module._resolveFilename(id, this);
-		if (!require.cache.hasOwnProperty(fullId)) {
+		if (!fullId) {
 			intellisense.logMessage("Node.js modules: require() called with unknown id " + id);
 			return null;
+		}
+		if (!require.cache.hasOwnProperty(fullId)) {
+			loadModule(fullId);
 		}
 		return require.cache[fullId].exports;
 	};
 
+	var asyncLoadedIds = Object.create(null);
+	function loadModule(id) {
+		if (asyncLoadedIds[id]) return;
+		asyncLoadedIds[id] = true;
 
-	intellisense.declareModule = function (path) {
-		/// <summary>Creates an empty module object.  Call this function before running any actual modules so that require() can see future modules.  This should only be used in generated code.</summary>
-		if (require.cache.hasOwnProperty(path))
-			return require.cache[path];
-		var newModule = require.cache[path] = new Module(path);
-		return newModule;
-	};
+		intellisense.logMessage("Node.js modules: async loading module " + id + "; queue is " + JSON.stringify(_$asyncRequests.getItems()));
+		
+		var insertBefore = _$asyncRequests.getItems()[0];
+		require._definitions[id].forEach(function (path) {
+			_$asyncRequests.insertBefore({ src: path }, insertBefore);
+		});
+	}
+
 	intellisense.enterModuleDefinition = function (path) {
 		/// <summary>Creates globals for the definition of a new module.  Call this function before running the normal Node.js module source code.  This should only be used in generated code.</summary>
-		var newModule = global.module = require.cache[path] || intellisense.declareModule(path);
+		var newModule = global.module = require.cache[path] = new Module(path);
 
 		// Shorthand for module.exports
 		global.exports = newModule.exports;
 		global.__filename = path;
 		global.__dirname = path.replace(/[\/\\][^\/\\]+$/, '');
+		intellisense.logMessage("Node.js modules: Defining module " + path);
 	};
 
 	intellisense.closeModule = function () {
