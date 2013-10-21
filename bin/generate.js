@@ -14,6 +14,12 @@ var JSWriter = require('./JSWriter');
 
 var projectDir = './';
 
+// For debugging, it's much easier to be able to change the
+// source files and have changes immediately reflect in the
+// actual IntelliSense, without re-generating first.
+var useLocalTemplates = __dirname.indexOf(path.resolve(projectDir)) === 0;
+if (useLocalTemplates)
+	console.log("Referencing template files directly from source; not copying to output directory.");
 
 var outputDir = projectDir + 'node_modules/.vs-nodesense/';
 rimraf.sync(outputDir);
@@ -27,6 +33,10 @@ var refGen = new ModuleEmitter(projectDir, outputDir);
 
 function referenceTemplateFile(name) {
 	var src = path.resolve(__dirname + '/../templates/' + name);
+
+	if (useLocalTemplates)
+		return indexJS.writeReference(src);
+
 	var dest = outputDir + name;
 	fs.createReadStream(src).pipe(fs.createWriteStream(dest));
 	indexJS.writeReference(dest);
