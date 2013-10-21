@@ -3,6 +3,9 @@ _Node.js meets Visual Studio_
 
 This project extends Visual Studio's Javascript engine to provide full IntelliSense for Node.js code, including 3rd-party modules.
 
+##Work-in-progress
+3rd-party modules do not yet work; I will use [module-deps](https://github.com/substack/module-deps) to find and reference them
+
 ##Usage
 NodeSense requires Visual Studio 2012 or later; the Javascript engine in earlier versions does not execute user code and cannot support this.
 
@@ -23,12 +26,21 @@ vs-nodesense
 This will generate files in `node_modules/.vs-nodesense`, including a copy of Node.js' built-in modules, links to every JS file in your project, and glue code to make it all work together in Visual Studio's IntelliSense engine.
 Make sure this folder is in your `.gitignore` file, even if the rest of `node_modules` isn't.
 
-The generator will also create a `Scripts/_references.js` in the current directory with a reference to the generated files; this will tell Visual Studio to run the IntelliSense in every file.
+This folder will contain a file named `Node.js` which references the rest of the generated IntelliSense code.  Drag this file to your `~/Scripts/_references.js` and IntelliSense will start working correctly everywhere in your project.
+
+#Features
+
+ - Gets rid of all non-Node.js globals, including variables declared in other files
+ - _TODO_: Supports `fs.readdir` and `fs.readFile` for modules that build APIs from the filesystem
+ - Supports full Node.js module loading mechanisms; any existing Node.js module should work perfectly (unless it builds APIs from HTTP requests, like `googleapis`)
+ - Runs actual Node.js source from your version of Node (except the `module` and `process` objects); should accurately reflect all built-in APIs
+ - Fully supports Go-to-definition, both for Node.js built-in source and other modules
+ - All code (both Node.js generator code and generated VS-side Javascript) is JSHint-clean
 
 ##Writing client-side code
 NodeSense will remove all non-Node.js entries from the IntelliSense globals, including the entire DOM API.  If your project also contains browser-side code, NodeSense can be configured to provide dual-environment IntelliSense (for systems like [browserify](http://browserify.org/), which have both DOM globals and Node.js globals), or to fully restore a pure-browser environment.
 
-To restore browser globals (for dual-environment scripts), call `intellisense.restoreGlobals()`.  
+To restore browser globals (for dual-environment scripts), call `intellisense.restoreGlobals()`  (you may also want to set `process.browser = true;` to correctly affect browserify-aware modules).  
 To remove Node.js globals, call `intellisense.removeNodeGlobals()` (before calling `restoreGlobals`).
 
 These calls should be placed in a separate file that is only referenced using a `/// <reference path="..." />` directive, so that they will be processed by Visual Studio but not Node.js.
