@@ -1,10 +1,13 @@
-#vs-nodesense
+#<strike>vs-nodesense</strike>
 _Node.js meets Visual Studio_
 
 This project extends Visual Studio's Javascript engine to provide full IntelliSense for Node.js code, including 3rd-party modules.
 
 ##Work-in-progress
-3rd-party modules do not yet work; I will use [module-deps](https://github.com/substack/module-deps) to find and reference them
+3rd-party modules do not yet work; I will use [module-deps](https://github.com/substack/module-deps) to find and reference them.
+
+**This project has been abandoned.**.  
+Instead, use the [Node.js Tools for Visual Studio](https://nodejstools.codeplex.com/)
 
 ##Usage
 NodeSense requires Visual Studio 2012 or later; the Javascript engine in earlier versions does not execute user code and cannot support this.
